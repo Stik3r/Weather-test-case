@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Weather</string>
+    <string-array name="citys">
+        <item>Москва</item>
+        <item>Вологда</item>
+        <item>Лондон</item>
+        <item>Ваншингтон</item>
+        <item>Пекин</item>
+        <item>Токио</item>
+        <item>Киев</item>
+        <item>Париж</item>
+        <item>Берлин</item>
+        <item>Рим</item>
+    </string-array>
+</resources>
