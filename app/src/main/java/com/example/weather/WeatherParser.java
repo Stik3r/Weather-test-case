@@ -57,7 +57,12 @@ public class WeatherParser implements Runnable{
                 List<Temperature> listData = new ArrayList<>();
                 for(int i = 0; i < jsonHours.length(); i++){
                     JSONObject hour = jsonHours.getJSONObject(i);
-                    Temperature temperature = new Temperature(hour.getString("time"), hour.getDouble("temp_c"));
+                    JSONObject condition = hour.getJSONObject("condition");
+                    Temperature temperature = new Temperature(
+                            hour.getString("time"),
+                            hour.getDouble("temp_c"),
+                            condition.getString("icon")
+                    );
                     listData.add(temperature);
                 }
 

@@ -1,9 +1,11 @@
 package com.example.weather;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -33,7 +35,10 @@ public class TempAdapter extends RecyclerView.Adapter<TempAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Temperature temperature = tempList.get(position);
         holder.dateView.setText(temperature.getDate());
-        holder.tempView.setText(Double.toString(temperature.getTemp()) + " C°");
+        holder.tempView.setText("Температура: " + Double.toString(temperature.getTemp()) + " C°");
+        holder.picView.setImageBitmap(Bitmap.createScaledBitmap(
+                temperature.getImg(), 180, 180, false
+        ));
     }
 
     @Override
@@ -42,9 +47,11 @@ public class TempAdapter extends RecyclerView.Adapter<TempAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        final ImageView picView;
         final TextView dateView, tempView;
         ViewHolder(View view){
             super(view);
+            picView = view.findViewById(R.id.pic);
             dateView = view.findViewById(R.id.data);
             tempView = view.findViewById(R.id.temp);
         }
