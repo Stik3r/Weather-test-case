@@ -12,4 +12,5 @@
         <item>Берлин</item>
         <item>Рим</item>
     </string-array>
+    <string name="get_btn">Узнать погоду</string>
 </resources>
