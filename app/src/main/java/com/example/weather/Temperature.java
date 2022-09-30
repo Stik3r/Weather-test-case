@@ -3,17 +3,21 @@ package com.example.weather;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class Temperature {
+public class Temperature implements Serializable {
     private String date;
     private double temp;
-    private Bitmap img;
+    private transient Bitmap img;
 
     public Temperature(String date, double temp, String url){
         setDate(date);
@@ -57,6 +61,27 @@ public class Temperature {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException{
+        oos.defaultWriteObject();
+
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        boolean success = img.compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                byteStream);
+        if(success){
+            oos.writeObject(byteStream.toByteArray());
+        }
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException{
+        ois.defaultReadObject();
+        byte[] image = (byte[]) ois.readObject();
+        if(image != null && image.length > 0){
+            img = BitmapFactory.decodeByteArray(image, 0, image.length);
         }
     }
 }

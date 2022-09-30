@@ -2,6 +2,7 @@ package com.example.weather;
 
 import android.app.Activity;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,7 +36,6 @@ public class WeatherParser implements Runnable{
         URL url = null;
         try {
             url = new URL(urlData + api_key + "&q=" + city + lang);
-
             conn = (HttpsURLConnection) url.openConnection();
             conn.connect();
 
@@ -43,16 +43,16 @@ public class WeatherParser implements Runnable{
             if (responsecode != 200) {
                 throw new RuntimeException("HttpResponseCode: " + responsecode);
             } else {
+
                 String inline = "";
                 Scanner scanner = new Scanner(url.openStream());
-
                 while (scanner.hasNext()) {
                     inline += scanner.nextLine();
                 }
                 scanner.close();
-                data = inline;
 
-                JSONArray jsonHours = new JSONObject(data).getJSONObject("forecast").getJSONArray("forecastday")
+
+                JSONArray jsonHours = new JSONObject(inline).getJSONObject("forecast").getJSONArray("forecastday")
                         .getJSONObject(0).getJSONArray("hour");
                 List<Temperature> listData = new ArrayList<>();
                 for(int i = 0; i < jsonHours.length(); i++){
@@ -66,6 +66,8 @@ public class WeatherParser implements Runnable{
                     listData.add(temperature);
                 }
 
+                DataController.SerializeData(city, listData, activity);
+
                 hourWeather.post(new Runnable() {
                     @Override
                     public void run() {
@@ -75,7 +77,14 @@ public class WeatherParser implements Runnable{
                 });
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity, "Не удалоь подключиться к серверу. " +
+                            "Загрузка данных с устройства", Toast.LENGTH_SHORT).show();
+                }
+            });
+            LoadDataFromDevice();
         } finally {
             if (conn != null) {
                 conn.disconnect();
@@ -83,4 +92,23 @@ public class WeatherParser implements Runnable{
         }
     }
 
+    private void LoadDataFromDevice(){
+        List<Temperature> listData = DataController.DeserializeData(city, activity);
+        if(listData == null){
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(activity, "Данных не найдено", Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+        hourWeather.post(new Runnable() {
+            @Override
+            public void run() {
+                TempAdapter tempAdapter = new TempAdapter(activity, listData);
+                hourWeather.setAdapter(tempAdapter);
+            }
+        });
+    }
 }
