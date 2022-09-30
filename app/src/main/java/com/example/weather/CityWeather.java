@@ -17,10 +17,12 @@ public class CityWeather extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city_weather);
+
         hourWeather = findViewById(R.id.hourWeather);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         hourWeather.setLayoutManager(llm);
+
         WeatherParser.activity = this;
         WeatherParser.hourWeather = hourWeather;
         Thread thread = new Thread(parser);

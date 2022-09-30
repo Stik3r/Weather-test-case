@@ -21,12 +21,9 @@ public class MainActivity extends AppCompatActivity {
         get_btn = findViewById(R.id.get_btn);
         list_citys = findViewById(R.id.citys_list);
         Intent intent = new Intent(this, CityWeather.class);
-        get_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                WeatherParser.city = list_citys.getSelectedItem().toString();
-                startActivity(intent);
-            }
+        get_btn.setOnClickListener(view -> {
+            WeatherParser.city = list_citys.getSelectedItem().toString();
+            startActivity(intent);
         });
     }
 }

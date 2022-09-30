@@ -1,7 +1,6 @@
 package com.example.weather;
 
 import android.app.Activity;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -10,8 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +25,11 @@ public class WeatherParser implements Runnable{
     static public RecyclerView hourWeather;
     static public String city = "";
 
-    String data = "";
 
     @Override
     public void run() {
         HttpsURLConnection conn = null;
-        URL url = null;
+        URL url;
         try {
             url = new URL(urlData + api_key + "&q=" + city + lang);
             conn = (HttpsURLConnection) url.openConnection();
@@ -51,39 +47,17 @@ public class WeatherParser implements Runnable{
                 }
                 scanner.close();
 
-
-                JSONArray jsonHours = new JSONObject(inline).getJSONObject("forecast").getJSONArray("forecastday")
-                        .getJSONObject(0).getJSONArray("hour");
-                List<Temperature> listData = new ArrayList<>();
-                for(int i = 0; i < jsonHours.length(); i++){
-                    JSONObject hour = jsonHours.getJSONObject(i);
-                    JSONObject condition = hour.getJSONObject("condition");
-                    Temperature temperature = new Temperature(
-                            hour.getString("time"),
-                            hour.getDouble("temp_c"),
-                            condition.getString("icon")
-                    );
-                    listData.add(temperature);
-                }
-
+                List<Temperature> listData = StringToListData(inline);
                 DataController.SerializeData(city, listData, activity);
 
-                hourWeather.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        TempAdapter tempAdapter = new TempAdapter(activity, listData);
-                        hourWeather.setAdapter(tempAdapter);
-                    }
+                hourWeather.post(() -> {
+                    TempAdapter tempAdapter = new TempAdapter(activity, listData);
+                    hourWeather.setAdapter(tempAdapter);
                 });
             }
         } catch (Exception e) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(activity, "Не удалоь подключиться к серверу. " +
-                            "Загрузка данных с устройства", Toast.LENGTH_SHORT).show();
-                }
-            });
+            activity.runOnUiThread(() -> Toast.makeText(activity, "Не удалоь подключиться к серверу. " +
+                    "Загрузка данных с устройства", Toast.LENGTH_SHORT).show());
             LoadDataFromDevice();
         } finally {
             if (conn != null) {
@@ -92,23 +66,33 @@ public class WeatherParser implements Runnable{
         }
     }
 
+    public List<Temperature> StringToListData(String res) throws JSONException {
+        JSONArray jsonHours = new JSONObject(res).getJSONObject("forecast").getJSONArray("forecastday")
+                .getJSONObject(0).getJSONArray("hour");
+        List<Temperature> listData = new ArrayList<>();
+        for(int i = 0; i < jsonHours.length(); i++){
+            JSONObject hour = jsonHours.getJSONObject(i);
+            JSONObject condition = hour.getJSONObject("condition");
+            Temperature temperature = new Temperature(
+                    hour.getString("time"),
+                    hour.getDouble("temp_c"),
+                    condition.getString("icon")
+            );
+            listData.add(temperature);
+        }
+        return listData;
+    }
+
     private void LoadDataFromDevice(){
         List<Temperature> listData = DataController.DeserializeData(city, activity);
         if(listData == null){
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(activity, "Данных не найдено", Toast.LENGTH_SHORT).show();
-                }
-            });
+            activity.runOnUiThread(() -> Toast.makeText(activity, "Данных не найдено",
+                    Toast.LENGTH_SHORT).show());
             return;
         }
-        hourWeather.post(new Runnable() {
-            @Override
-            public void run() {
-                TempAdapter tempAdapter = new TempAdapter(activity, listData);
-                hourWeather.setAdapter(tempAdapter);
-            }
+        hourWeather.post(() -> {
+            TempAdapter tempAdapter = new TempAdapter(activity, listData);
+            hourWeather.setAdapter(tempAdapter);
         });
     }
 }
